@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - homework/lesson13
 
   workflow_dispatch:
 
