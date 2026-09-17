@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - homework/lesson13
+      - homework/lesson15
 
   workflow_dispatch:
 
@@ -42,6 +43,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          VITE_GEOAPIFY_API_KEY: ${{ secrets.VITE_GEOAPIFY_API_KEY }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
