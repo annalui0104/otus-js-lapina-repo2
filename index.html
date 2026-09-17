@@ -2,23 +2,165 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OTUS Homework</title>
+  <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0"
+  />
+  <meta
+          name="description"
+          content="Приложение прогноза погоды"
+  />
+
+  <title>Погода</title>
 </head>
 
 <body>
-<main class="container">
-  <h1>OTUS JavaScript Basic</h1>
+<div class="background-circle background-circle--one"></div>
+<div class="background-circle background-circle--two"></div>
 
-  <p id="message">
-    Страница собрана с помощью Vite
-  </p>
+<main class="app">
+  <header class="header">
+    <div>
+      <p class="header__label">WEATHER APP</p>
+      <h1 class="header__title">Погода</h1>
 
-  <button id="button" type="button">
-    Нажми меня
-  </button>
+      <p class="header__subtitle">
+        Узнайте погоду в любом городе мира
+      </p>
+    </div>
+
+    <div class="header__icon" aria-hidden="true">
+      ☀️
+    </div>
+  </header>
+
+  <form id="search-form" class="search">
+    <label class="search__field">
+      <span class="search__icon">⌕</span>
+
+      <input
+              id="city-input"
+              class="search__input"
+              type="text"
+              placeholder="Например, Санкт-Петербург"
+              autocomplete="off"
+      />
+    </label>
+
+    <button class="search__button" type="submit">
+      Найти
+    </button>
+  </form>
+
+  <p id="error" class="error" hidden></p>
+
+  <div class="content">
+    <section
+            id="weather"
+            class="card weather"
+            hidden
+    >
+      <div class="card__header">
+        <div>
+          <p class="card__label">
+            Сейчас
+          </p>
+
+          <h2
+                  id="city-name"
+                  class="weather__city"
+          ></h2>
+        </div>
+
+        <span
+                class="weather__icon"
+                aria-hidden="true"
+        >
+                        🌤️
+                    </span>
+      </div>
+
+      <div class="weather__info">
+        <div
+                id="temperature"
+                class="weather__temperature"
+        ></div>
+
+        <div
+                id="condition"
+                class="weather__condition"
+        ></div>
+      </div>
+    </section>
+
+    <section
+            id="map-section"
+            class="card map-card"
+            hidden
+    >
+      <div class="card__header">
+        <div>
+          <p class="card__label">
+            Местоположение
+          </p>
+
+          <h2 class="card__title">
+            Карта
+          </h2>
+        </div>
+
+        <span
+                class="map-card__icon"
+                aria-hidden="true"
+        >
+                        📍
+                    </span>
+      </div>
+
+      <div class="map-wrapper">
+        <img
+                id="map"
+                class="map"
+                alt="Карта города"
+        />
+      </div>
+    </section>
+
+    <section class="card history-card">
+      <div class="card__header">
+        <div>
+          <p class="card__label">
+            Недавние запросы
+          </p>
+
+          <h2 class="card__title">
+            История поиска
+          </h2>
+        </div>
+
+        <span
+                class="history-card__icon"
+                aria-hidden="true"
+        >
+                        🕘
+                    </span>
+      </div>
+
+      <ul
+              id="history"
+              class="history"
+      ></ul>
+
+      <p class="history-card__hint">
+        Нажмите на город, чтобы посмотреть его снова
+      </p>
+    </section>
+  </div>
 </main>
 
-<script type="module" src="/src/main.js"></script>
+<script
+        type="module"
+        src="/src/main.js"
+></script>
 </body>
 </html>
