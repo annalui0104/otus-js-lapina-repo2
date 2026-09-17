@@ -37,3 +37,38 @@ export const getWeather = async (latitude, longitude) => {
 
     return data.current;
 };
+
+export const getCityByCoordinates = async (
+    latitude,
+    longitude,
+) => {
+    const apiKey =
+        import.meta.env.VITE_GEOAPIFY_API_KEY;
+
+    const url =
+        "https://api.geoapify.com/v1/geocode/reverse" +
+        `?lat=${latitude}` +
+        `&lon=${longitude}` +
+        "&type=city" +
+        "&format=json" +
+        "&lang=ru" +
+        `&apiKey=${apiKey}`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+        throw new Error(
+            "Не удалось определить город",
+        );
+    }
+
+    const data = await response.json();
+
+    if (!data.results?.length) {
+        throw new Error(
+            "Не удалось определить город",
+        );
+    }
+
+    return data.results[0];
+};
