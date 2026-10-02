@@ -7,6 +7,7 @@ on:
       - homework/lesson13
       - homework/lesson15
       - homework/lesson17
+      - homework/lesson23
 
   workflow_dispatch:
 

@@ -1,35 +1,60 @@
 import "./style.css";
 
 import {
-    findCity, getCityByCoordinates,
-    getWeather,
-} from "./weather/api.js";
+    WeatherService,
+} from "./services/WeatherService.js";
 
 import {
-    addCityToHistory,
-    loadHistory,
-    saveHistory,
-} from "./weather/history.js";
-import {getCurrentLocation} from "./weather/location.js";
+    LocationService,
+} from "./services/LocationService.js";
 
-const searchForm = document.querySelector("#search-form");
-const cityInput = document.querySelector("#city-input");
+import {
+    StorageService,
+} from "./services/StorageService.js";
 
-const weatherBlock = document.querySelector("#weather");
-const cityName = document.querySelector("#city-name");
-const temperature = document.querySelector("#temperature");
-const condition = document.querySelector("#condition");
+import {
+    MapService,
+} from "./services/MapService.js";
 
-const mapSection = document.querySelector("#map-section");
-const map = document.querySelector("#map");
+const weatherService = new WeatherService();
+const locationService = new LocationService();
+const storageService = new StorageService();
+const mapService = new MapService();
 
-const historyList = document.querySelector("#history");
-const error = document.querySelector("#error");
+const searchForm =
+    document.querySelector("#search-form");
+
+const cityInput =
+    document.querySelector("#city-input");
 
 const locationButton =
     document.querySelector("#location-button");
 
-let history = loadHistory();
+const weatherBlock =
+    document.querySelector("#weather");
+
+const cityName =
+    document.querySelector("#city-name");
+
+const temperature =
+    document.querySelector("#temperature");
+
+const condition =
+    document.querySelector("#condition");
+
+const mapSection =
+    document.querySelector("#map-section");
+
+const map =
+    document.querySelector("#map");
+
+const historyList =
+    document.querySelector("#history");
+
+const error =
+    document.querySelector("#error");
+
+let history = storageService.getHistory();
 
 const getWeatherDescription = (weatherCode) => {
     const descriptions = {
@@ -54,44 +79,8 @@ const getWeatherDescription = (weatherCode) => {
         95: "Гроза",
     };
 
-    return descriptions[weatherCode] ?? "Нет данных";
-};
-
-const createMapUrl = (latitude, longitude) => {
-    const apiKey = import.meta.env.VITE_GEOAPIFY_API_KEY;
-
-    const coordinates = `${longitude},${latitude}`;
-
-    return (
-        "https://maps.geoapify.com/v1/staticmap" +
-        "?style=osm-bright" +
-        "&width=600" +
-        "&height=300" +
-        `&center=lonlat:${coordinates}` +
-        "&zoom=10" +
-        `&marker=lonlat:${coordinates};color:%23ff0000;size:48` +
-        `&apiKey=${apiKey}`
-    );
-};
-
-const renderHistory = () => {
-    historyList.innerHTML = "";
-
-    history.forEach((city) => {
-        const item = document.createElement("li");
-        const button = document.createElement("button");
-
-        button.type = "button";
-        button.textContent = city;
-
-        button.addEventListener("click", () => {
-            cityInput.value = city;
-            searchWeather(city);
-        });
-
-        item.append(button);
-        historyList.append(item);
-    });
+    return descriptions[weatherCode] ??
+        "Нет данных";
 };
 
 const showError = (message) => {
@@ -107,47 +96,94 @@ const hideError = () => {
     error.hidden = true;
 };
 
+const showWeather = ({
+                         city,
+                         country,
+                         weather,
+                         latitude,
+                         longitude,
+                     }) => {
+    cityName.textContent = country
+        ? `${city}, ${country}`
+        : city;
+
+    temperature.textContent =
+        `${Math.round(weather.temperature_2m)} °C`;
+
+    condition.textContent =
+        getWeatherDescription(
+            weather.weather_code,
+        );
+
+    map.src = mapService.createMapUrl(
+        latitude,
+        longitude,
+    );
+
+    map.alt = `Карта города ${city}`;
+
+    weatherBlock.hidden = false;
+    mapSection.hidden = false;
+};
+
+const renderHistory = () => {
+    historyList.innerHTML = "";
+
+    history.forEach((city) => {
+        const item =
+            document.createElement("li");
+
+        const button =
+            document.createElement("button");
+
+        button.type = "button";
+        button.textContent = city;
+
+        button.addEventListener(
+            "click",
+            () => {
+                cityInput.value = city;
+                searchWeather(city);
+            },
+        );
+
+        item.append(button);
+        historyList.append(item);
+    });
+};
+
 const searchWeather = async (city) => {
     hideError();
 
     try {
-        const cityData = await findCity(city);
+        const cityData =
+            await weatherService.findCity(city);
 
-        const weather = await getWeather(
-            cityData.latitude,
-            cityData.longitude,
-        );
+        const weather =
+            await weatherService.getWeather(
+                cityData.latitude,
+                cityData.longitude,
+            );
 
-        cityName.textContent =
-            `${cityData.name}, ${cityData.country}`;
+        showWeather({
+            city: cityData.name,
+            country: cityData.country,
+            weather,
+            latitude: cityData.latitude,
+            longitude: cityData.longitude,
+        });
 
-        temperature.textContent =
-            `${Math.round(weather.temperature_2m)} °C`;
+        history =
+            storageService.addCity(
+                cityData.name,
+            );
 
-        condition.textContent =
-            getWeatherDescription(weather.weather_code);
-
-        map.src = createMapUrl(
-            cityData.latitude,
-            cityData.longitude,
-        );
-
-        map.alt = `Карта города ${cityData.name}`;
-
-        weatherBlock.hidden = false;
-        mapSection.hidden = false;
-
-        history = addCityToHistory(
-            history,
-            cityData.name,
-        );
-
-        saveHistory(history);
         renderHistory();
     } catch (searchError) {
         showError(searchError.message);
     }
 };
+
 const searchWeatherByLocation = async () => {
     hideError();
 
@@ -159,52 +195,43 @@ const searchWeatherByLocation = async () => {
         const {
             latitude,
             longitude,
-        } = await getCurrentLocation();
+        } =
+            await locationService
+                .getCurrentPosition();
 
         const location =
-            await getCityByCoordinates(
+            await locationService
+                .getCityByCoordinates(
+                    latitude,
+                    longitude,
+                );
+
+        const weather =
+            await weatherService.getWeather(
                 latitude,
                 longitude,
             );
 
-        const weather = await getWeather(
-            latitude,
-            longitude,
-        );
-
         const currentCity =
             location.city ??
+            location.town ??
+            location.village ??
             location.name ??
             "Ваш город";
 
-        cityName.textContent =
-            `${currentCity}, ${location.country ?? ""}`;
-
-        temperature.textContent =
-            `${Math.round(weather.temperature_2m)} °C`;
-
-        condition.textContent =
-            getWeatherDescription(
-                weather.weather_code,
-            );
-
-        map.src = createMapUrl(
+        showWeather({
+            city: currentCity,
+            country: location.country,
+            weather,
             latitude,
             longitude,
-        );
+        });
 
-        map.alt =
-            `Карта города ${currentCity}`;
+        history =
+            storageService.addCity(
+                currentCity,
+            );
 
-        weatherBlock.hidden = false;
-        mapSection.hidden = false;
-
-        history = addCityToHistory(
-            history,
-            currentCity,
-        );
-
-        saveHistory(history);
         renderHistory();
     } catch (locationError) {
         showError(
@@ -212,28 +239,34 @@ const searchWeatherByLocation = async () => {
         );
     } finally {
         locationButton.disabled = false;
+
         locationButton.textContent =
             "📍 Погода рядом со мной";
     }
 };
 
+searchForm.addEventListener(
+    "submit",
+    (event) => {
+        event.preventDefault();
+
+        const city =
+            cityInput.value.trim();
+
+        if (!city) {
+            showError(
+                "Введите название города",
+            );
+            return;
+        }
+
+        searchWeather(city);
+    },
+);
+
 locationButton.addEventListener(
     "click",
     searchWeatherByLocation,
 );
-
-
-searchForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const city = cityInput.value.trim();
-
-    if (!city) {
-        showError("Введите название города");
-        return;
-    }
-
-    searchWeather(city);
-});
 
 renderHistory();
