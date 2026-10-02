@@ -1,7 +1,7 @@
 import "./style.css";
 
 import {
-    findCity,
+    findCity, getCityByCoordinates,
     getWeather,
 } from "./weather/api.js";
 
@@ -10,6 +10,7 @@ import {
     loadHistory,
     saveHistory,
 } from "./weather/history.js";
+import {getCurrentLocation} from "./weather/location.js";
 
 const searchForm = document.querySelector("#search-form");
 const cityInput = document.querySelector("#city-input");
@@ -24,6 +25,9 @@ const map = document.querySelector("#map");
 
 const historyList = document.querySelector("#history");
 const error = document.querySelector("#error");
+
+const locationButton =
+    document.querySelector("#location-button");
 
 let history = loadHistory();
 
@@ -144,6 +148,80 @@ const searchWeather = async (city) => {
         showError(searchError.message);
     }
 };
+const searchWeatherByLocation = async () => {
+    hideError();
+
+    locationButton.disabled = true;
+    locationButton.textContent =
+        "Определяем местоположение...";
+
+    try {
+        const {
+            latitude,
+            longitude,
+        } = await getCurrentLocation();
+
+        const location =
+            await getCityByCoordinates(
+                latitude,
+                longitude,
+            );
+
+        const weather = await getWeather(
+            latitude,
+            longitude,
+        );
+
+        const currentCity =
+            location.city ??
+            location.name ??
+            "Ваш город";
+
+        cityName.textContent =
+            `${currentCity}, ${location.country ?? ""}`;
+
+        temperature.textContent =
+            `${Math.round(weather.temperature_2m)} °C`;
+
+        condition.textContent =
+            getWeatherDescription(
+                weather.weather_code,
+            );
+
+        map.src = createMapUrl(
+            latitude,
+            longitude,
+        );
+
+        map.alt =
+            `Карта города ${currentCity}`;
+
+        weatherBlock.hidden = false;
+        mapSection.hidden = false;
+
+        history = addCityToHistory(
+            history,
+            currentCity,
+        );
+
+        saveHistory(history);
+        renderHistory();
+    } catch (locationError) {
+        showError(
+            locationError.message,
+        );
+    } finally {
+        locationButton.disabled = false;
+        locationButton.textContent =
+            "📍 Погода рядом со мной";
+    }
+};
+
+locationButton.addEventListener(
+    "click",
+    searchWeatherByLocation,
+);
+
 
 searchForm.addEventListener("submit", (event) => {
     event.preventDefault();
