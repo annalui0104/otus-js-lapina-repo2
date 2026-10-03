@@ -585,3 +585,27 @@ button {
   opacity: 0.6;
   cursor: wait;
 }
+
+.navigation {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.navigation__link {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.navigation__link:hover {
+  text-decoration: underline;
+}
+
+.about-page {
+  margin-top: 24px;
+}
+
+.about-page p {
+  line-height: 1.6;
+}
