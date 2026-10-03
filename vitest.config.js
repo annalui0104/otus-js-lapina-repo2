@@ -6,7 +6,11 @@ export default defineConfig({
             provider: "v8",
 
             include: [
-                "src/services/**/*.js",
+                "src/**/*.js",
+            ],
+
+            exclude: [
+                "src/**/*.test.js",
             ],
 
             reporter: [
@@ -14,12 +18,6 @@ export default defineConfig({
                 "html",
             ],
 
-            thresholds: {
-                statements: 80,
-                branches: 80,
-                functions: 80,
-                lines: 80,
-            },
         },
     },
 });

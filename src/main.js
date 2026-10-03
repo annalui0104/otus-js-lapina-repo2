@@ -1,272 +1,209 @@
 import "./style.css";
 
-import {
-    WeatherService,
-} from "./services/WeatherService.js";
+import { EventBus } from "./core/EventBus.js";
 
-import {
-    LocationService,
-} from "./services/LocationService.js";
+import { SearchWidget } from "./components/SearchWidget.js";
+import { LocationWidget } from "./components/LocationWidget.js";
+import { WeatherWidget } from "./components/WeatherWidget.js";
+import { HistoryWidget } from "./components/HistoryWidget.js";
 
-import {
-    StorageService,
-} from "./services/StorageService.js";
+import { WeatherService } from "./services/WeatherService.js";
+import { LocationService } from "./services/LocationService.js";
+import { StorageService } from "./services/StorageService.js";
+import { MapService } from "./services/MapService.js";
 
-import {
-    MapService,
-} from "./services/MapService.js";
+
+const eventBus = new EventBus();
 
 const weatherService = new WeatherService();
 const locationService = new LocationService();
 const storageService = new StorageService();
 const mapService = new MapService();
 
-const searchForm =
-    document.querySelector("#search-form");
 
-const cityInput =
-    document.querySelector("#city-input");
+new SearchWidget({
+    form: document.querySelector(
+        "#search-form",
+    ),
+    input: document.querySelector(
+        "#city-input",
+    ),
+    eventBus,
+});
 
-const locationButton =
-    document.querySelector("#location-button");
 
-const weatherBlock =
-    document.querySelector("#weather");
+new LocationWidget({
+    button: document.querySelector(
+        "#location-button",
+    ),
+    eventBus,
+});
 
-const cityName =
-    document.querySelector("#city-name");
 
-const temperature =
-    document.querySelector("#temperature");
+new WeatherWidget({
+    cityName: document.querySelector(
+        "#city-name",
+    ),
 
-const condition =
-    document.querySelector("#condition");
+    temperature: document.querySelector(
+        "#temperature",
+    ),
 
-const mapSection =
-    document.querySelector("#map-section");
+    condition: document.querySelector(
+        "#condition",
+    ),
 
-const map =
-    document.querySelector("#map");
+    weatherBlock: document.querySelector(
+        "#weather",
+    ),
 
-const historyList =
-    document.querySelector("#history");
+    mapSection: document.querySelector(
+        "#map-section",
+    ),
 
-const error =
-    document.querySelector("#error");
+    map: document.querySelector(
+        "#map",
+    ),
 
-let history = storageService.getHistory();
+    error: document.querySelector(
+        "#error",
+    ),
 
-const getWeatherDescription = (weatherCode) => {
-    const descriptions = {
-        0: "Ясно",
-        1: "Преимущественно ясно",
-        2: "Переменная облачность",
-        3: "Пасмурно",
-        45: "Туман",
-        48: "Изморозь",
-        51: "Лёгкая морось",
-        53: "Морось",
-        55: "Сильная морось",
-        61: "Небольшой дождь",
-        63: "Дождь",
-        65: "Сильный дождь",
-        71: "Небольшой снег",
-        73: "Снег",
-        75: "Сильный снег",
-        80: "Небольшой ливень",
-        81: "Ливень",
-        82: "Сильный ливень",
-        95: "Гроза",
-    };
+    eventBus,
+    mapService,
+});
 
-    return descriptions[weatherCode] ??
-        "Нет данных";
-};
 
-const showError = (message) => {
-    error.textContent = message;
-    error.hidden = false;
+new HistoryWidget({
+    element: document.querySelector(
+        "#history",
+    ),
+    eventBus,
+});
 
-    weatherBlock.hidden = true;
-    mapSection.hidden = true;
-};
 
-const hideError = () => {
-    error.textContent = "";
-    error.hidden = true;
-};
+const updateHistory = (city) => {
+    const history =
+        storageService.addCity(city);
 
-const showWeather = ({
-                         city,
-                         country,
-                         weather,
-                         latitude,
-                         longitude,
-                     }) => {
-    cityName.textContent = country
-        ? `${city}, ${country}`
-        : city;
-
-    temperature.textContent =
-        `${Math.round(weather.temperature_2m)} °C`;
-
-    condition.textContent =
-        getWeatherDescription(
-            weather.weather_code,
-        );
-
-    map.src = mapService.createMapUrl(
-        latitude,
-        longitude,
+    eventBus.emit(
+        "history:updated",
+        history,
     );
-
-    map.alt = `Карта города ${city}`;
-
-    weatherBlock.hidden = false;
-    mapSection.hidden = false;
 };
 
-const renderHistory = () => {
-    historyList.innerHTML = "";
 
-    history.forEach((city) => {
-        const item =
-            document.createElement("li");
-
-        const button =
-            document.createElement("button");
-
-        button.type = "button";
-        button.textContent = city;
-
-        button.addEventListener(
-            "click",
-            () => {
-                cityInput.value = city;
-                searchWeather(city);
-            },
-        );
-
-        item.append(button);
-        historyList.append(item);
-    });
-};
-
-const searchWeather = async (city) => {
-    hideError();
-
-    try {
-        const cityData =
-            await weatherService.findCity(city);
-
-        const weather =
-            await weatherService.getWeather(
-                cityData.latitude,
-                cityData.longitude,
-            );
-
-        showWeather({
-            city: cityData.name,
-            country: cityData.country,
-            weather,
-            latitude: cityData.latitude,
-            longitude: cityData.longitude,
-        });
-
-        history =
-            storageService.addCity(
-                cityData.name,
-            );
-
-        renderHistory();
-    } catch (searchError) {
-        showError(searchError.message);
-    }
-};
-
-const searchWeatherByLocation = async () => {
-    hideError();
-
-    locationButton.disabled = true;
-    locationButton.textContent =
-        "Определяем местоположение...";
-
-    try {
-        const {
+const loadWeather = async ({
+                               city,
+                               country,
+                               latitude,
+                               longitude,
+                           }) => {
+    const weather =
+        await weatherService.getWeather(
             latitude,
             longitude,
-        } =
-            await locationService
-                .getCurrentPosition();
+        );
 
-        const location =
-            await locationService
-                .getCityByCoordinates(
-                    latitude,
-                    longitude,
+    eventBus.emit(
+        "weather:loaded",
+        {
+            city,
+            country,
+            weather,
+            latitude,
+            longitude,
+        },
+    );
+};
+
+
+eventBus.on(
+    "city:search",
+    async (city) => {
+        try {
+            const cityData =
+                await weatherService.findCity(
+                    city,
                 );
 
-        const weather =
-            await weatherService.getWeather(
-                latitude,
-                longitude,
+            await loadWeather({
+                city: cityData.name,
+                country: cityData.country,
+                latitude:
+                cityData.latitude,
+                longitude:
+                cityData.longitude,
+            });
+
+            updateHistory(
+                cityData.name,
             );
-
-        const currentCity =
-            location.city ??
-            location.town ??
-            location.village ??
-            location.name ??
-            "Ваш город";
-
-        showWeather({
-            city: currentCity,
-            country: location.country,
-            weather,
-            latitude,
-            longitude,
-        });
-
-        history =
-            storageService.addCity(
-                currentCity,
+        } catch (error) {
+            eventBus.emit(
+                "weather:error",
+                error.message,
             );
-
-        renderHistory();
-    } catch (locationError) {
-        showError(
-            locationError.message,
-        );
-    } finally {
-        locationButton.disabled = false;
-
-        locationButton.textContent =
-            "📍 Погода рядом со мной";
-    }
-};
-
-searchForm.addEventListener(
-    "submit",
-    (event) => {
-        event.preventDefault();
-
-        const city =
-            cityInput.value.trim();
-
-        if (!city) {
-            showError(
-                "Введите название города",
-            );
-            return;
         }
-
-        searchWeather(city);
     },
 );
 
-locationButton.addEventListener(
-    "click",
-    searchWeatherByLocation,
+
+eventBus.on(
+    "location:request",
+    async () => {
+        eventBus.emit(
+            "location:loading",
+            true,
+        );
+
+        try {
+            const {
+                latitude,
+                longitude,
+            } =
+                await locationService
+                    .getCurrentPosition();
+
+            const location =
+                await locationService
+                    .getCityByCoordinates(
+                        latitude,
+                        longitude,
+                    );
+
+            const city =
+                location.city ??
+                location.town ??
+                location.village ??
+                location.name ??
+                "Ваш город";
+
+            await loadWeather({
+                city,
+                country:
+                location.country,
+                latitude,
+                longitude,
+            });
+
+            updateHistory(city);
+        } catch (error) {
+            eventBus.emit(
+                "weather:error",
+                error.message,
+            );
+        } finally {
+            eventBus.emit(
+                "location:loading",
+                false,
+            );
+        }
+    },
 );
 
-renderHistory();
+
+eventBus.emit(
+    "history:updated",
+    storageService.getHistory(),
+);
