@@ -1,11 +1,14 @@
 <!doctype html>
+
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
+
   <meta
           name="viewport"
           content="width=device-width, initial-scale=1.0"
   />
+
   <meta
           name="description"
           content="Приложение прогноза погоды"
@@ -15,159 +18,275 @@
 </head>
 
 <body>
-<div class="background-circle background-circle--one"></div>
-<div class="background-circle background-circle--two"></div>
+<div
+        class="background-circle background-circle--one"
+></div>
+
+<div
+        class="background-circle background-circle--two"
+></div>
 
 <main class="app">
-  <header class="header">
-    <div>
-      <p class="header__label">WEATHER APP</p>
-      <h1 class="header__title">Погода</h1>
 
-      <p class="header__subtitle">
-        Узнайте погоду в любом городе мира
-      </p>
-    </div>
-
-    <div class="header__icon" aria-hidden="true">
-      ☀️
-    </div>
-  </header>
-
-  <form id="search-form" class="search">
-    <label class="search__field">
-      <span class="search__icon">⌕</span>
-
-      <input
-              id="city-input"
-              class="search__input"
-              type="text"
-              placeholder="Например, Санкт-Петербург"
-              autocomplete="off"
-      />
-    </label>
-
-    <button class="search__button" type="submit">
-      Найти
-    </button>
-  </form>
-  <button
-          id="location-button"
-          class="location-button"
-          type="button"
-  >
-    📍 Моё местоположение
-  </button>
-
-  <p id="error" class="error" hidden></p>
-
-  <div class="content">
-    <section
-            id="weather"
-            class="card weather"
-            hidden
+  <nav class="navigation">
+    <a
+            id="home-link"
+            class="navigation__link"
+            href="%BASE_URL%"
     >
-      <div class="card__header">
-        <div>
-          <p class="card__label">
-            Сейчас
-          </p>
+      Погода
+    </a>
 
-          <h2
-                  id="city-name"
-                  class="weather__city"
-          ></h2>
-        </div>
+    <a
+            id="about-link"
+            class="navigation__link"
+            href="%BASE_URL%about"
+    >
+      О приложении
+    </a>
+  </nav>
 
-        <span
-                class="weather__icon"
-                aria-hidden="true"
-        >
+
+  <div id="weather-content">
+
+    <header class="header">
+      <div>
+        <p class="header__label">
+          WEATHER APP
+        </p>
+
+        <h1 class="header__title">
+          Погода
+        </h1>
+
+        <p class="header__subtitle">
+          Узнайте погоду в любом городе мира
+        </p>
+      </div>
+
+      <div
+              class="header__icon"
+              aria-hidden="true"
+      >
+        ☀️
+      </div>
+    </header>
+
+
+    <form
+            id="search-form"
+            class="search"
+    >
+      <label class="search__field">
+
+                <span class="search__icon">
+                    ⌕
+                </span>
+
+        <input
+                id="city-input"
+                class="search__input"
+                type="text"
+                placeholder="Например, Санкт-Петербург"
+                autocomplete="off"
+        />
+
+      </label>
+
+      <button
+              class="search__button"
+              type="submit"
+      >
+        Найти
+      </button>
+    </form>
+
+
+    <button
+            id="location-button"
+            class="location-button"
+            type="button"
+    >
+      📍 Моё местоположение
+    </button>
+
+
+    <p
+            id="error"
+            class="error"
+            hidden
+    ></p>
+
+
+    <div class="content">
+
+      <section
+              id="weather"
+              class="card weather"
+              hidden
+      >
+        <div class="card__header">
+
+          <div>
+            <p class="card__label">
+              Сейчас
+            </p>
+
+            <h2
+                    id="city-name"
+                    class="weather__city"
+            ></h2>
+          </div>
+
+          <span
+                  class="weather__icon"
+                  aria-hidden="true"
+          >
                         🌤️
                     </span>
-      </div>
 
-      <div class="weather__info">
-        <div
-                id="temperature"
-                class="weather__temperature"
-        ></div>
-
-        <div
-                id="condition"
-                class="weather__condition"
-        ></div>
-      </div>
-    </section>
-
-    <section
-            id="map-section"
-            class="card map-card"
-            hidden
-    >
-      <div class="card__header">
-        <div>
-          <p class="card__label">
-            Местоположение
-          </p>
-
-          <h2 class="card__title">
-            Карта
-          </h2>
         </div>
 
-        <span
-                class="map-card__icon"
-                aria-hidden="true"
-        >
+
+        <div class="weather__info">
+
+          <div
+                  id="temperature"
+                  class="weather__temperature"
+          ></div>
+
+          <div
+                  id="condition"
+                  class="weather__condition"
+          ></div>
+
+        </div>
+
+      </section>
+
+
+      <section
+              id="map-section"
+              class="card map-card"
+              hidden
+      >
+        <div class="card__header">
+
+          <div>
+            <p class="card__label">
+              Местоположение
+            </p>
+
+            <h2 class="card__title">
+              Карта
+            </h2>
+          </div>
+
+          <span
+                  class="map-card__icon"
+                  aria-hidden="true"
+          >
                         📍
                     </span>
-      </div>
 
-      <div class="map-wrapper">
-        <img
-                id="map"
-                class="map"
-                alt="Карта города"
-                src="/map-placeholder.svg"/>
-      </div>
-    </section>
-
-    <section class="card history-card">
-      <div class="card__header">
-        <div>
-          <p class="card__label">
-            Недавние запросы
-          </p>
-
-          <h2 class="card__title">
-            История поиска
-          </h2>
         </div>
 
-        <span
-                class="history-card__icon"
-                aria-hidden="true"
-        >
+
+        <div class="map-wrapper">
+
+          <img
+                  id="map"
+                  class="map"
+                  alt="Карта города"
+                  src="%BASE_URL%map-placeholder.svg"
+          />
+
+        </div>
+
+      </section>
+
+
+      <section
+              class="card history-card"
+      >
+        <div class="card__header">
+
+          <div>
+            <p class="card__label">
+              Недавние запросы
+            </p>
+
+            <h2 class="card__title">
+              История поиска
+            </h2>
+          </div>
+
+          <span
+                  class="history-card__icon"
+                  aria-hidden="true"
+          >
                         🕘
                     </span>
-      </div>
 
-      <ul
-              id="history"
-              class="history"
-      ></ul>
+        </div>
 
-      <p class="history-card__hint">
-        Нажмите на город, чтобы посмотреть его снова
-      </p>
-    </section>
+
+        <ul
+                id="history"
+                class="history"
+        ></ul>
+
+
+        <p class="history-card__hint">
+          Нажмите на город,
+          чтобы посмотреть его снова
+        </p>
+
+      </section>
+
+    </div>
+
   </div>
+
+
+  <section
+          id="about-page"
+          class="card about-page"
+          hidden
+  >
+    <p class="card__label">
+      WEATHER APP
+    </p>
+
+    <h1 class="card__title">
+      О приложении
+    </h1>
+
+    <p>
+      Приложение позволяет смотреть
+      текущую погоду в городах мира.
+    </p>
+
+    <p>
+      Можно искать город по названию,
+      определять местоположение пользователя
+      и открывать ранее просмотренные города
+      из истории.
+    </p>
+
+    <p>
+      Для сохранения состояния приложения
+      используется клиентский роутинг.
+    </p>
+  </section>
+
 </main>
+
 
 <script
         type="module"
         src="/src/main.js"
 ></script>
+
 </body>
 </html>
