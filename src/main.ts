@@ -2,51 +2,91 @@ import "./style.css";
 
 import {
     EventBus,
-} from "./core/EventBus.js";
+} from "./core/EventBus";
 
 import {
     AppRouter,
-} from "./router/AppRouter.js";
+} from "./router/AppRouter";
 
 import {
     SearchWidget,
-} from "./components/SearchWidget.js";
+} from "./components/SearchWidget";
 
 import {
     LocationWidget,
-} from "./components/LocationWidget.js";
+} from "./components/LocationWidget";
 
 import {
     WeatherWidget,
-} from "./components/WeatherWidget.js";
+} from "./components/WeatherWidget";
 
 import {
     HistoryWidget,
-} from "./components/HistoryWidget.js";
+} from "./components/HistoryWidget";
 
 import {
     AboutWidget,
-} from "./components/AboutWidget.js";
+} from "./components/AboutWidget";
 
 import {
     WeatherService,
-} from "./services/WeatherService.js";
+} from "./services/WeatherService";
 
 import {
     LocationService,
-} from "./services/LocationService.js";
+} from "./services/LocationService";
 
 import {
     StorageService,
-} from "./services/StorageService.js";
+} from "./services/StorageService";
 
 import {
     MapService,
-} from "./services/MapService.js";
+} from "./services/MapService";
+
+import type {
+    AppEvents,
+} from "./types/events";
 
 
-const eventBus = new EventBus();
-const router = new AppRouter();
+const getElement = <
+    T extends Element,
+>(
+    selector: string,
+): T => {
+    const element =
+        document.querySelector<T>(
+            selector,
+        );
+
+    if (!element) {
+        throw new Error(
+            `Не найден элемент: ${selector}`,
+        );
+    }
+
+    return element;
+};
+
+
+const getErrorMessage = (
+    error: unknown,
+): string => {
+    if (
+        error instanceof Error
+    ) {
+        return error.message;
+    }
+
+    return "Неизвестная ошибка";
+};
+
+
+const eventBus =
+    new EventBus<AppEvents>();
+
+const router =
+    new AppRouter();
 
 const weatherService =
     new WeatherService();
@@ -62,61 +102,69 @@ const mapService =
 
 
 const cityInput =
-    document.querySelector(
+    getElement<HTMLInputElement>(
         "#city-input",
     );
 
 
 new SearchWidget({
-    form: document.querySelector(
-        "#search-form",
-    ),
+    form:
+        getElement<HTMLFormElement>(
+            "#search-form",
+        ),
 
-    input: cityInput,
+    input:
+    cityInput,
 
     eventBus,
 });
 
 
 new LocationWidget({
-    button: document.querySelector(
-        "#location-button",
-    ),
+    button:
+        getElement<HTMLButtonElement>(
+            "#location-button",
+        ),
 
     eventBus,
 });
 
 
 new WeatherWidget({
-    cityName: document.querySelector(
-        "#city-name",
-    ),
+    cityName:
+        getElement<HTMLElement>(
+            "#city-name",
+        ),
 
-    temperature: document.querySelector(
-        "#temperature",
-    ),
+    temperature:
+        getElement<HTMLElement>(
+            "#temperature",
+        ),
 
-    condition: document.querySelector(
-        "#condition",
-    ),
+    condition:
+        getElement<HTMLElement>(
+            "#condition",
+        ),
 
     weatherBlock:
-        document.querySelector(
+        getElement<HTMLElement>(
             "#weather",
         ),
 
     mapSection:
-        document.querySelector(
+        getElement<HTMLElement>(
             "#map-section",
         ),
 
-    map: document.querySelector(
-        "#map",
-    ),
+    map:
+        getElement<HTMLImageElement>(
+            "#map",
+        ),
 
-    error: document.querySelector(
-        "#error",
-    ),
+    error:
+        getElement<HTMLElement>(
+            "#error",
+        ),
 
     eventBus,
     mapService,
@@ -124,9 +172,10 @@ new WeatherWidget({
 
 
 new HistoryWidget({
-    element: document.querySelector(
-        "#history",
-    ),
+    element:
+        getElement<HTMLElement>(
+            "#history",
+        ),
 
     eventBus,
 });
@@ -135,20 +184,23 @@ new HistoryWidget({
 const aboutWidget =
     new AboutWidget({
         element:
-            document.querySelector(
+            getElement<HTMLElement>(
                 "#about-page",
             ),
 
         weatherContent:
-            document.querySelector(
+            getElement<HTMLElement>(
                 "#weather-content",
             ),
     });
 
 
-const updateHistory = (city) => {
+const updateHistory = (
+    city: string,
+): void => {
     const history =
-        storageService.addCity(city);
+        storageService
+            .addCity(city);
 
     eventBus.emit(
         "history:updated",
@@ -158,7 +210,9 @@ const updateHistory = (city) => {
 
 
 const loadCityWeather =
-    async (city) => {
+    async (
+        city: string,
+    ): Promise<void> => {
         try {
             const cityData =
                 await weatherService
@@ -174,7 +228,8 @@ const loadCityWeather =
             eventBus.emit(
                 "weather:loaded",
                 {
-                    city: cityData.name,
+                    city:
+                    cityData.name,
 
                     country:
                     cityData.country,
@@ -195,7 +250,9 @@ const loadCityWeather =
         } catch (error) {
             eventBus.emit(
                 "weather:error",
-                error.message,
+                getErrorMessage(
+                    error,
+                ),
             );
         }
     };
@@ -252,7 +309,9 @@ eventBus.on(
         } catch (error) {
             eventBus.emit(
                 "weather:error",
-                error.message,
+                getErrorMessage(
+                    error,
+                ),
             );
         } finally {
             eventBus.emit(
@@ -268,7 +327,8 @@ router.onCity(
     async (city) => {
         aboutWidget.hide();
 
-        cityInput.value = city;
+        cityInput.value =
+            city;
 
         await loadCityWeather(
             city,
@@ -287,32 +347,28 @@ router.onHome(() => {
 });
 
 
-document
-    .querySelector(
-        "#home-link",
-    )
-    .addEventListener(
-        "click",
-        (event) => {
-            event.preventDefault();
+getElement<HTMLAnchorElement>(
+    "#home-link",
+).addEventListener(
+    "click",
+    (event) => {
+        event.preventDefault();
 
-            router.navigateHome();
-        },
-    );
+        router.navigateHome();
+    },
+);
 
 
-document
-    .querySelector(
-        "#about-link",
-    )
-    .addEventListener(
-        "click",
-        (event) => {
-            event.preventDefault();
+getElement<HTMLAnchorElement>(
+    "#about-link",
+).addEventListener(
+    "click",
+    (event) => {
+        event.preventDefault();
 
-            router.navigateToAbout();
-        },
-    );
+        router.navigateToAbout();
+    },
+);
 
 
 eventBus.emit(

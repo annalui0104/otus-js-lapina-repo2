@@ -7,7 +7,7 @@ import {
 
 import {
     StorageService,
-} from "../../services/StorageService.js";
+} from "../../services/StorageService";
 
 const createStorage = () => {
     const data = {};

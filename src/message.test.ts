@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { getButtonMessage } from "./message.js";
+import { getButtonMessage } from "./message";
 
 describe("getButtonMessage", () => {
     test("возвращает сообщение о работе JavaScript", () => {

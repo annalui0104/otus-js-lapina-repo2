@@ -7,7 +7,7 @@ import {
 
 import {
     WeatherService,
-} from "../../services/WeatherService.js";
+} from "../../services/WeatherService";
 
 describe("WeatherService", () => {
     test("находит город", async () => {

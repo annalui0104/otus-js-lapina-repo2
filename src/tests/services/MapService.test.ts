@@ -6,7 +6,7 @@ import {
 
 import {
     MapService,
-} from "../../services/MapService.js";
+} from "../../services/MapService";
 
 describe("MapService", () => {
     test("создает URL карты", () => {
