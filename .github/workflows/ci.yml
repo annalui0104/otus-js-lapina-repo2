@@ -23,8 +23,14 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Test
         run: npm test
+
+      - name: Coverage
+        run: npm run test:coverage
 
       - name: Build
         run: npm run build
